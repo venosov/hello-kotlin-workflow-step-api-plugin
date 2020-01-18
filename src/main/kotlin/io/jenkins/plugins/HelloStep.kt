@@ -1,6 +1,7 @@
 package io.jenkins.plugins
 
 import hudson.Extension
+import hudson.FilePath
 import hudson.model.TaskListener
 import jenkins.YesNoMaybe
 import org.jenkinsci.plugins.workflow.steps.*
@@ -8,6 +9,7 @@ import org.kohsuke.stapler.DataBoundConstructor
 import org.kohsuke.stapler.StaplerRequest
 import org.kohsuke.stapler.StaplerResponse
 import java.io.IOException
+import java.util.*
 
 
 class HelloStep
@@ -20,7 +22,25 @@ class HelloStep
     private class Execution(context: StepContext): SynchronousNonBlockingStepExecution<Void>(context) {
         override fun run(): Void? {
             val listener = context.get(TaskListener::class.java)!!
-            listener.logger.println("VVV")
+            val root = context.get(FilePath::class.java)!!
+
+            var filesNumber = 0
+            var directoriesNumber = 0
+            val toProcess: Stack<FilePath> = Stack()
+            toProcess.push(root)
+
+            while (!toProcess.isEmpty()) {
+                val path: FilePath = toProcess.pop()
+                if (path.isDirectory) {
+                    toProcess.addAll(path.list())
+                    directoriesNumber++
+                } else {
+                    filesNumber++
+                }
+            }
+
+            listener.logger.println("files number: $filesNumber --- directories number: $directoriesNumber")
+
             return null
         }
     }
