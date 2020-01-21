@@ -1,5 +1,6 @@
 package io.jenkins.plugins
 
+import arrow.core.Either
 import hudson.Extension
 import hudson.FilePath
 import hudson.model.TaskListener
@@ -20,6 +21,10 @@ class HelloStep
     }
 
     private class Execution(context: StepContext): SynchronousNonBlockingStepExecution<Void>(context) {
+        fun reciprocal(i: Int): Either<IllegalArgumentException, Double> =
+                if (i == 0) Either.Left(IllegalArgumentException("Cannot take reciprocal of 0."))
+                else Either.Right(1.0 / i)
+
         override fun run(): Void? {
             val listener = context.get(TaskListener::class.java)!!
             val root = context.get(FilePath::class.java)!!
@@ -40,6 +45,13 @@ class HelloStep
             }
 
             listener.logger.println("files number: $filesNumber --- directories number: $directoriesNumber")
+
+            val value = when(val x = reciprocal(1)) {
+                is Either.Left -> "Can't take reciprocal of 0!"
+                is Either.Right -> "Got reciprocal: ${x.b}"
+            }
+
+            listener.logger.println("testing arrow: $value")
 
             return null
         }
