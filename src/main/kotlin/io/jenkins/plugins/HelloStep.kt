@@ -1,6 +1,9 @@
 package io.jenkins.plugins
 
 import arrow.core.Either
+import arrow.core.Left
+import arrow.core.Right
+import arrow.core.extensions.fx
 import hudson.Extension
 import hudson.FilePath
 import hudson.model.TaskListener
@@ -21,9 +24,16 @@ class HelloStep
     }
 
     private class Execution(context: StepContext): SynchronousNonBlockingStepExecution<Void>(context) {
+//        fun reciprocal(i: Int): Either<IllegalArgumentException, Double> =
+//                if (i == 0) Either.Left(IllegalArgumentException("Cannot take reciprocal of 0."))
+//                else Either.Right(1.0 / i)
+
         fun reciprocal(i: Int): Either<IllegalArgumentException, Double> =
-                if (i == 0) Either.Left(IllegalArgumentException("Cannot take reciprocal of 0."))
-                else Either.Right(1.0 / i)
+                Either.fx<IllegalArgumentException, Double> {
+                    if (i == 0) !Left(IllegalArgumentException("Cannot take reciprocal of 0."))
+                    else !Right(1.0 / i)
+                }
+
 
         override fun run(): Void? {
             val listener = context.get(TaskListener::class.java)!!
@@ -48,7 +58,7 @@ class HelloStep
 
             val value = when(val x = reciprocal(1)) {
                 is Either.Left -> "Can't take reciprocal of 0!"
-                is Either.Right -> "Got reciprocal: ${x.b}"
+                is Either.Right -> "[arrow-fx] Got reciprocal: ${x.b}"
             }
 
             listener.logger.println("testing arrow: $value")
