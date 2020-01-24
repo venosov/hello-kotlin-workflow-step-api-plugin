@@ -56,10 +56,13 @@ class HelloStep
 
             listener.logger.println("files number: $filesNumber --- directories number: $directoriesNumber")
 
-            val value = when(val x = reciprocal(1)) {
-                is Either.Left -> "Can't take reciprocal of 0!"
-                is Either.Right -> "[arrow-fx] Got reciprocal: ${x.b}"
-            }
+//            val value = when(val x = reciprocal(1)) {
+//                is Either.Left -> "Can't take reciprocal of 0!"
+//                is Either.Right -> "[arrow-fx] Got reciprocal: ${x.b}"
+//            }
+
+            val x = reciprocal(1)
+            val value = x.bimap({ "Can't take reciprocal of 0!" }, { "[arrow-fx, bimap] Got reciprocal: $it" } )
 
             listener.logger.println("testing arrow: $value")
 
