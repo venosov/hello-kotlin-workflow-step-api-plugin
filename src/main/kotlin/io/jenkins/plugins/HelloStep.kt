@@ -4,6 +4,12 @@ import hudson.Extension
 import hudson.FilePath
 import hudson.model.TaskListener
 import jenkins.YesNoMaybe
+import kotlinx.coroutines.InternalCoroutinesApi
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.runBlocking
 import org.jenkinsci.plugins.workflow.steps.*
 import org.kohsuke.stapler.DataBoundConstructor
 import org.kohsuke.stapler.StaplerRequest
@@ -20,6 +26,14 @@ class HelloStep
     }
 
     private class Execution(context: StepContext): SynchronousNonBlockingStepExecution<Void>(context) {
+        fun foo(): Flow<Int> = flow { // flow builder
+            for (i in 1..3) {
+                delay(100) // pretend we are doing something useful here
+                emit(i) // emit next value
+            }
+        }
+
+        @InternalCoroutinesApi
         override fun run(): Void? {
             val listener = context.get(TaskListener::class.java)!!
             val root = context.get(FilePath::class.java)!!
@@ -40,6 +54,10 @@ class HelloStep
             }
 
             listener.logger.println("files number: $filesNumber --- directories number: $directoriesNumber")
+
+            runBlocking {
+                foo().collect { value -> listener.logger.println("testing flow $value") }
+            }
 
             return null
         }
