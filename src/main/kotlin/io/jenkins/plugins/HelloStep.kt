@@ -4,7 +4,6 @@ import hudson.Extension
 import hudson.FilePath
 import hudson.model.TaskListener
 import jenkins.YesNoMaybe
-import kotlinx.coroutines.InternalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
@@ -33,7 +32,6 @@ class HelloStep
             }
         }
 
-        @InternalCoroutinesApi
         override fun run(): Void? {
             val listener = context.get(TaskListener::class.java)!!
             val root = context.get(FilePath::class.java)!!
